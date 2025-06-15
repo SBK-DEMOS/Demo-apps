@@ -1,0 +1,36 @@
+# Use a Go base image that supports Go 1.24.3 or newer
+FROM golang:1.24 AS builder
+
+# Set the working directory
+WORKDIR /app
+
+# Copy go mod and sum files
+COPY go.mod go.sum ./
+
+# Download all dependencies. Dependencies will be cached if the go.mod and go.sum files are not changed
+RUN go mod download
+
+# Copy the source code
+COPY . .
+
+# Build the application
+# CGO_ENABLED=0 disables cgo, which creates a statically linked executable
+# -ldflags="-s -w" reduces the binary size by stripping debug symbols
+# -o controller specifies the output binary name
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -ldflags="-s -w" -o controller .
+
+# Use a minimal base image for the final stage
+FROM gcr.io/distroless/static-debian12
+
+# Set the working directory
+WORKDIR /
+
+# Copy the built executable from the builder stage
+COPY --from=builder /app/controller /usr/local/bin/controller
+
+# Explicitly set a non-root user for the container
+# UID 65532 is commonly used for 'nobody' or unprivileged users in distroless images.
+USER 65532
+
+# Run the controller
+ENTRYPOINT ["/usr/local/bin/controller"]

@@ -1,0 +1,49 @@
+
+Here is a Kubernetes controller written in Go that will continuously monitor and label all Namespaces in your cluster. This controller uses the controller-runtime library, which simplifies the process of building Kubernetes controllers.
+
+The controller will perform the following actions:
+
+    Creation: When a new Namespace is created, the controller will add the label controller.example.com/managed: true to it.
+    Update: If a Namespace already exists but does not have the label, or if the label's value is different, the controller will update it.
+    Deletion: When a Namespace is deleted, the controller will not perform any action on it, as the Namespace object will no longer exist. However, the controller will react to the deletion event.
+
+First, let's look at the Go code for the controller.
+
+main.go
+
+Next, you'll need the following YAML files to deploy your controller to a Kubernetes cluster:
+
+    rbac.yaml: Defines the necessary permissions for the controller to interact with Namespaces.
+    deployment.yaml: Defines the Kubernetes Deployment for the controller application.
+    Dockerfile: To build a Docker image for your Go application.
+	
+	
+To use this controller, follow these steps:
+
+   1. Save the files:
+        Save the Go code as main.go.
+        Save the RBAC YAML as rbac.yaml.
+        Save the Deployment YAML as deployment.yaml.
+        Save the Dockerfile as Dockerfile.
+
+   2. Initialize Go module:
+		go mod init your-module-name # e.g., go mod init github.com/your-username/namespace-labeler
+		go mod tidy
+   3. Build the Docker image:
+      docker build -t your-repo/namespace-labeler-controller:v2 .
+
+   4. Push the Docker image:
+      docker push your-repo/namespace-labeler-controller:latest
+	  
+   5. Apply the Kubernetes resources:
+	  kubectl apply -f rbac.yaml
+	  kubectl apply -f deployment.yaml
+	  
+ Once deployed, the controller will start watching for Namespace events and automatically apply the controller.example.com/managed: true label to all existing and newly created Namespaces.
+
+You can verify the labels by running:
+kubectl get namespaces -o custom-columns=NAME:.metadata.name,LABELS:.metadata.labels
+
+
+	
+	

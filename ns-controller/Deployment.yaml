@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: namespace-labeler-controller
+  namespace: my-controller-system
+  labels:
+    app: namespace-labeler-controller
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: namespace-labeler-controller
+  template:
+    metadata:
+      labels:
+        app: namespace-labeler-controller
+    spec:
+      serviceAccountName: default 
+      containers:
+      - name: controller
+        image: sbkdemos/namespace-labeler-controller:v2
+        imagePullPolicy: IfNotPresent
+        resources:
+          limits:
+            cpu: 100m
+            memory: 128Mi
+          requests:
+            cpu: 50m
+            memory: 64Mi
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          runAsNonRoot: true
+          capabilities:
+            drop:
+              - ALL
+      terminationGracePeriodSeconds: 10
