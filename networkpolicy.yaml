@@ -1,0 +1,33 @@
+# networkpolicy.yaml
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-nginx-ingress
+  namespace: my-secure-app
+spec:
+  podSelector:
+    matchLabels:
+      app: my-nginx
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    - from:
+      - namespaceSelector:
+          matchLabels:
+            kubernetes.io/metadata.name: ingress-nginx 
+        podSelector:
+          matchLabels:
+            app.kubernetes.io/name: ingress-nginx 
+      ports:
+        - protocol: TCP
+          port: 8080
+  egress:
+    - to:
+      - ipBlock:
+          cidr: 0.0.0.0/0
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53

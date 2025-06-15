@@ -1,0 +1,35 @@
+# ingress.yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: my-nginx-ingress
+  namespace: my-secure-app
+  annotations:
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: app1.sbkapps.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: my-nginx-service
+            port:
+              number: 80
+      - path: /electronics
+        pathType: Prefix
+        backend:
+          service:
+            name: electronics-shop-service
+            port:
+              number: 80
+  tls:
+  - hosts:
+    - app1.sbkapps.com
+    secretName: app1-tls-secret

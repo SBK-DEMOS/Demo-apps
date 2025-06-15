@@ -1,0 +1,11 @@
+# pdb.yaml
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: my-nginx-pdb
+  namespace: my-secure-app
+spec:
+  maxUnavailable: 1
+  selector:
+    matchLabels:
+      app: my-nginx
