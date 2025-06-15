@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: electronics-shop-deployment
+  labels:
+    app: electronics-shop
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: electronics-shop
+  template:
+    metadata:
+      labels:
+        app: electronics-shop
+    spec:
+      containers:
+      - name: electronics-shop-container
+        image: sbkdemos/electronics-shop:v2
+        ports:
+        - containerPort: 8000 # The port your Python HTTP server listens on
+        resources:
+          limits:
+            cpu: "200m" # Limit CPU usage to 200 millicores
+            memory: "256Mi" # Limit memory usage to 256 MiB
+          requests:
+            cpu: "100m" # Request 100 millicores of CPU
+            memory: "128Mi" # Request 128 MiB of memory
