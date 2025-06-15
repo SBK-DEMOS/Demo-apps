@@ -1,0 +1,100 @@
+# deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: my-nginx-app
+  namespace: my-secure-app
+  labels:
+    app: my-nginx
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: my-nginx
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+  template:
+    metadata:
+      labels:
+        app: my-nginx
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 2000
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+      - name: nginx
+        image: nginx:1.28.0-alpine  
+        ports:
+        - containerPort: 8080
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 8080
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          failureThreshold: 3
+          timeoutSeconds: 3
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 8080
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          failureThreshold: 3
+          timeoutSeconds: 3
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "100m"
+          limits:
+            memory: "128Mi"
+            cpu: "200m"
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop:
+              - ALL
+          runAsNonRoot: true
+          runAsUser: 1000
+        volumeMounts:
+          - name: nginx-conf-dir
+            mountPath: /etc/nginx/conf.d
+            readOnly: true
+          - name: nginx-main-conf
+            mountPath: /etc/nginx/nginx.conf
+            subPath: nginx.conf
+            readOnly: true
+          - name: nginx-cache
+            mountPath: /var/lib/nginx
+          - name: custom-html
+            mountPath: /usr/share/nginx/html/index.html
+            subPath: index.html
+            readOnly: true
+      volumes:
+        - name: nginx-conf-dir
+          configMap:
+            name: nginx-config
+            items:
+            - key: default.conf
+              path: default.conf
+        - name: nginx-main-conf
+          configMap:
+            name: nginx-config
+            items:
+            - key: nginx.conf
+              path: nginx.conf
+        - name: nginx-cache
+          emptyDir: {}
+        - name: custom-html
+          configMap:
+            name: nginx-config
+            items:
+            - key: index.html
+              path: index.html
