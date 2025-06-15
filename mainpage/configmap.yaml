@@ -1,0 +1,101 @@
+# configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nginx-config
+  namespace: my-secure-app
+data:
+  default.conf: |
+    server {
+        listen 8080;
+        location / {
+            root /usr/share/nginx/html;
+            index index.html index.htm;
+        }
+    }
+  nginx.conf: |
+    user  nginx;
+    worker_processes  auto;
+
+    error_log  /dev/stderr warn;
+    pid        /var/lib/nginx/nginx.pid;
+
+    events {
+        worker_connections  1024;
+    }
+
+    http {
+        include       /etc/nginx/mime.types;
+        default_type  application/octet-stream;
+
+        log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
+                          '$status $body_bytes_sent "$http_referer" '
+                          '"$http_user_agent" "$http_x_forwarded_for"';
+
+        access_log  /dev/stdout main;
+
+        sendfile        on;
+        tcp_nopush      on;
+        tcp_nodelay     on;
+        keepalive_timeout  65;
+        types_hash_max_size 2048;
+
+        client_body_temp_path /var/lib/nginx/client_temp;
+        proxy_temp_path       /var/lib/nginx/proxy_temp;
+        fastcgi_temp_path     /var/lib/nginx/fastcgi_temp;
+        uwsgi_temp_path       /var/lib/nginx/uwsgi_temp;
+        scgi_temp_path        /var/lib/nginx/scgi_temp;
+
+        gzip on;
+
+        include /etc/nginx/conf.d/*.conf;
+    }
+  index.html: |
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>SBK Online shopping</title>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                background-color: #f0f0f0;
+                color: #333;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                min-height: 100vh;
+                margin: 0;
+            }
+            .container {
+                background-color: #ffffff;
+                padding: 40px;
+                border-radius: 10px;
+                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+                text-align: center;
+            }
+            h1 {
+                color: #0056b3;
+                margin-bottom: 20px;
+            }
+            p {
+                font-size: 1.1em;
+                line-height: 1.6;
+            }
+            .version {
+                margin-top: 30px;
+                font-size: 0.9em;
+                color: #666;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h1>Hello from SBK Online shopping site!</h1>
+            <p>This page is being served by an app deployed on Kubernetes.</p>
+            <p>You successfully deployed your application!</p>
+            <div class="version">Version: 1.0</div>
+        </div>
+    </body>
+    </html>
